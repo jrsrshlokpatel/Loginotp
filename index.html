@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Game Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 2D Game Generator</h1>
+            <p class="subtitle">Create simple 2D games with natural language commands</p>
+        </header>
+
+        <div class="main-content">
+            <div class="command-panel">
+                <h2>Game Commands</h2>
+                <textarea
+                    id="commandInput"
+                    placeholder="Enter your game commands here...&#10;&#10;Example:&#10;create a platformer game&#10;add player at 100 200 colored blue&#10;add platform at 50 400 width 700 height 20&#10;add enemy at 500 300 colored red&#10;add coin at 300 200 colored gold&#10;set gravity to 0.5"
+                    rows="12"
+                ></textarea>
+
+                <div class="button-group">
+                    <button id="generateBtn" class="btn btn-primary">Generate Game</button>
+                    <button id="resetBtn" class="btn btn-secondary">Reset</button>
+                    <button id="examplesBtn" class="btn btn-info">Load Example</button>
+                </div>
+
+                <div class="help-section">
+                    <h3>Available Commands:</h3>
+                    <ul>
+                        <li><code>create a [type] game</code> - Types: platformer, shooter, maze</li>
+                        <li><code>add player at X Y [colored COLOR]</code> - Add player character</li>
+                        <li><code>add platform at X Y width W height H</code> - Add platform</li>
+                        <li><code>add enemy at X Y [colored COLOR]</code> - Add enemy</li>
+                        <li><code>add coin at X Y [colored COLOR]</code> - Add collectible</li>
+                        <li><code>add obstacle at X Y width W height H</code> - Add obstacle</li>
+                        <li><code>set gravity to VALUE</code> - Set gravity (0-2)</li>
+                        <li><code>set background to COLOR</code> - Set background color</li>
+                    </ul>
+                    <p class="tip">Use arrow keys to move, spacebar to jump!</p>
+                </div>
+            </div>
+
+            <div class="game-panel">
+                <div class="game-info">
+                    <div class="score-display">Score: <span id="score">0</span></div>
+                    <div class="status-display" id="status">Ready to generate game</div>
+                </div>
+                <canvas id="gameCanvas" width="800" height="600"></canvas>
+                <div class="controls-info">
+                    <span>Arrow Keys: Move</span>
+                    <span>Space: Jump</span>
+                    <span>R: Restart</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="game-engine.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
