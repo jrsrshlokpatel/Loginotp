@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Command to Game Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: radial-gradient(circle at top, #161821 0%, #040406 55%, #000);
+      --card-bg: rgba(21, 23, 32, 0.9);
+      --accent: #21d4fd;
+      --accent-strong: #b721ff;
+      --text: #eef3ff;
+      --muted: #a6accd;
+      --shadow: 0 30px 80px rgba(3, 12, 40, 0.45);
+      font-size: clamp(15px, 1.8vw, 17px);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.6rem;
+      font-family: "Orbitron", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: clamp(1.5rem, 4vw, 3rem);
+    }
+
+    header {
+      text-align: center;
+      max-width: 720px;
+    }
+
+    h1 {
+      margin: 0 0 0.75rem;
+      font-size: clamp(2.6rem, 6vw, 4.4rem);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 10px 35px rgba(33, 212, 253, 0.35);
+    }
+
+    p.lead {
+      margin: 0 auto;
+      max-width: 38ch;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 1.05rem;
+    }
+
+    main {
+      width: min(100%, 1000px);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: clamp(1.4rem, 2vw, 2.2rem);
+    }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid rgba(33, 212, 253, 0.15);
+      border-radius: 18px;
+      padding: clamp(1.2rem, 3vw, 1.8rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    label {
+      font-size: 0.95rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      resize: vertical;
+      border: 1px solid rgba(33, 212, 253, 0.2);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      font-family: "Fira Code", "Courier New", monospace;
+      font-size: 0.95rem;
+      background: rgba(12, 13, 20, 0.75);
+      color: var(--text);
+      line-height: 1.5;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: rgba(183, 33, 255, 0.6);
+      box-shadow: 0 0 0 3px rgba(33, 212, 253, 0.25);
+    }
+
+    button {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #050608;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 20px 40px rgba(33, 212, 253, 0.25);
+    }
+
+    button:disabled {
+      filter: grayscale(0.3) brightness(0.6);
+      cursor: wait;
+    }
+
+    .status {
+      min-height: 24px;
+      font-size: 0.9rem;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    .status strong {
+      color: var(--accent);
+    }
+
+    .preview-shell {
+      background: #050608;
+      border-radius: 18px;
+      padding: clamp(1rem, 2.8vw, 1.6rem);
+      border: 1px solid rgba(95, 52, 235, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-shell::before {
+      content: "Preview";
+      position: absolute;
+      top: 16px;
+      left: 18px;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      color: rgba(255, 255, 255, 0.36);
+      text-transform: uppercase;
+    }
+
+    iframe {
+      width: 100%;
+      min-height: 340px;
+      border-radius: 12px;
+      border: 1px solid rgba(95, 52, 235, 0.2);
+      background: #0a0b13;
+    }
+
+    footer {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.45);
+      letter-spacing: 0.04em;
+    }
+
+    .history {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 0.4rem;
+    }
+
+    .history-entry {
+      padding: 0.65rem 0.75rem;
+      background: rgba(12, 13, 20, 0.65);
+      border-radius: 12px;
+      border: 1px solid rgba(33, 212, 253, 0.12);
+      font-size: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .history-entry span {
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+    }
+
+    .history-entry code {
+      font-family: "Fira Code", "Courier New", monospace;
+      font-size: 0.8rem;
+      color: var(--accent);
+      background: rgba(33, 212, 253, 0.1);
+      padding: 0.25rem 0.38rem;
+      border-radius: 6px;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .template-grid {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .template {
+      border-radius: 12px;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid rgba(33, 212, 253, 0.1);
+      background: rgba(12, 13, 20, 0.8);
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.15s ease, border 0.15s ease;
+    }
+
+    .template:hover {
+      transform: translateY(-1px);
+      border-color: rgba(183, 33, 255, 0.4);
+    }
+
+    .template strong {
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      color: var(--text);
+    }
+
+    @media (max-width: 840px) {
+      body {
+        padding-top: 3rem;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      iframe {
+        min-height: 260px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Command to Game Generator</h1>
+    <p class="lead">Describe the 2D game you want, and this sandbox will whip up a playable prototype on the fly. Tweak, iterate, ship it.</p>
+  </header>
+
+  <main>
+    <section class="panel" aria-label="Game command input">
+      <label for="command">Your game brief</label>
+      <textarea id="command" placeholder="Example: Simple top-down space shooter with arrow keys to move and space to shoot."></textarea>
+
+      <div class="template-grid" role="list">
+        <div class="template" tabindex="0" role="listitem" data-command="Platformer with arrow keys to move, space to jump, collect coins, avoid lava.">
+          <strong>Platformer</strong>
+          <span>Coin run, lava pits</span>
+        </div>
+        <div class="template" tabindex="0" role="listitem" data-command="Top-down shooter, arrow keys to move, WASD alternate, shoot with space, enemies spawn periodically.">
+          <strong>Shooter</strong>
+          <span>Arcade wave defense</span>
+        </div>
+        <div class="template" tabindex="0" role="listitem" data-command="Breakout clone with paddle controlled by mouse, bricks disappear on collision, scoreboard at top.">
+          <strong>Breakout</strong>
+          <span>Classic paddle + bricks</span>
+        </div>
+      </div>
+
+      <button id="generate" type="button">Generate Game</button>
+      <div class="status" id="status" aria-live="polite"></div>
+    </section>
+
+    <section class="panel" aria-label="Game preview">
+      <div class="preview-shell">
+        <iframe id="preview" title="Game preview" sandbox="allow-scripts"></iframe>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="History of generated games">
+      <h2 style="margin:0;font-size:1.2rem;letter-spacing:0.06em;text-transform:uppercase;">History</h2>
+      <p style="margin:0;color:var(--muted);font-size:0.85rem;">We keep your latest five briefs so you can reload them fast.</p>
+      <div class="history" id="history" role="log"></div>
+    </section>
+  </main>
+
+  <footer>
+    Crafted for rapid prototyping. Games run entirely in-browser.
+  </footer>
+
+  <template id="base-game-template">
+    <style>
+      html, body {
+        margin: 0;
+        background: #020409;
+        height: 100%;
+        overflow: hidden;
+        color: #f5f8ff;
+        font-family: "Fira Code", monospace;
+      }
+
+      canvas {
+        display: block;
+      }
+
+      #hud {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(5,10,22,0.65);
+        padding: 8px 18px;
+        border-radius: 999px;
+        border: 1px solid rgba(33,212,253,0.28);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+      }
+
+      #hud strong {
+        color: #21d4fd;
+      }
+    </style>
+    <canvas id="game" width="800" height="480"></canvas>
+    <div id="hud">Score: <strong id="score">0</strong></div>
+    <script>
+      const brief = `{{brief}}`;
+      const manifest = {{manifest}};
+
+      const canvas = document.getElementById('game');
+      const ctx = canvas.getContext('2d');
+      const keys = {};
+      const state = {
+        tick: 0,
+        score: 0,
+        lastSpawn: 0,
+        entities: [],
+        projectiles: [],
+        particles: []
+      };
+
+      const hero = {
+        x: canvas.width / 2 - manifest.player.width / 2,
+        y: canvas.height - manifest.player.height - 40,
+        width: manifest.player.width,
+        height: manifest.player.height,
+        speed: manifest.player.speed,
+        color: manifest.player.color,
+        vx: 0,
+        vy: 0,
+        canJump: true,
+      };
+
+      const inputBindings = manifest.controls;
+
+      const addEntity = (entity) => {
+        state.entities.push({ ...manifest.enemy.defaults, ...entity });
+      };
+
+      const spawnLoop = () => {
+        if (!manifest.enemy.spawnRate) return;
+        if (state.tick - state.lastSpawn > manifest.enemy.spawnRate) {
+          state.lastSpawn = state.tick;
+          addEntity({
+            x: Math.random() * (canvas.width - manifest.enemy.defaults.width),
+            y: manifest.enemy.spawnFrom === 'top' ? -40 : Math.random() * canvas.height * 0.4,
+            vy: manifest.enemy.movement === 'drop' ? manifest.enemy.defaults.speed : manifest.enemy.defaults.speed * (Math.random() * 1.4 + 0.3),
+            vx: manifest.enemy.movement === 'zigzag' ? (Math.random() > 0.5 ? 1 : -1) * manifest.enemy.defaults.speed * 0.6 : 0
+          });
+        }
+      };
+
+      const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+      const handleInput = () => {
+        hero.vx = 0;
+        if (keys[inputBindings.left]) hero.vx = -hero.speed;
+        if (keys[inputBindings.right]) hero.vx = hero.speed;
+
+        if (manifest.gravity.enabled) {
+          hero.vy += manifest.gravity.force;
+          if (keys[inputBindings.jump] && hero.canJump) {
+            hero.vy = -manifest.gravity.jumpImpulse;
+            hero.canJump = false;
+          }
+        } else {
+          hero.vy = 0;
+          if (keys[inputBindings.up]) hero.vy = -hero.speed;
+          if (keys[inputBindings.down]) hero.vy = hero.speed;
+        }
+
+        if (manifest.shooting.enabled && keys[inputBindings.fire]) {
+          shoot();
+        }
+      };
+
+      const shoot = () => {
+        const now = state.tick;
+        if (!state.lastShot || now - state.lastShot > manifest.shooting.rate) {
+          state.lastShot = now;
+          state.projectiles.push({
+            x: hero.x + hero.width / 2 - manifest.projectile.width / 2,
+            y: hero.y,
+            width: manifest.projectile.width,
+            height: manifest.projectile.height,
+            vy: -manifest.projectile.speed,
+            color: manifest.projectile.color
+          });
+        }
+      };
+
+      const updateHero = () => {
+        hero.x = clamp(hero.x + hero.vx, 0, canvas.width - hero.width);
+        hero.y = clamp(hero.y + hero.vy, 0, manifest.gravity.enabled ? canvas.height - hero.height - manifest.gravity.ground : canvas.height - hero.height);
+
+        if (manifest.gravity.enabled && hero.y >= canvas.height - hero.height - manifest.gravity.ground - 0.1) {
+          hero.y = canvas.height - hero.height - manifest.gravity.ground;
+          hero.vy = 0;
+          hero.canJump = true;
+        }
+      };
+
+      const updateProjectiles = () => {
+        state.projectiles = state.projectiles.filter((shot) => {
+          shot.y += shot.vy;
+          return shot.y + shot.height > 0;
+        });
+      };
+
+      const updateEntities = () => {
+        state.entities.forEach((enemy) => {
+          enemy.y += enemy.vy || 0;
+          enemy.x += enemy.vx || 0;
+
+          if (manifest.enemy.movement === 'zigzag') {
+            if (enemy.x <= 0 || enemy.x + enemy.width >= canvas.width) {
+              enemy.vx *= -1;
+            }
+          }
+
+          if (manifest.enemy.movement === 'patrol') {
+            if (!enemy.originX) enemy.originX = enemy.x;
+            const range = manifest.enemy.patrolRange;
+            if (enemy.x > enemy.originX + range || enemy.x < enemy.originX - range) {
+              enemy.vx *= -1;
+            }
+          }
+        });
+
+        if (manifest.enemy.bounds === 'despawn') {
+          state.entities = state.entities.filter((enemy) => enemy.y <= canvas.height + 100);
+        } else {
+          state.entities.forEach((enemy) => {
+            if (enemy.y > canvas.height - enemy.height) {
+              enemy.y = canvas.height - enemy.height;
+              enemy.vy = manifest.enemy.defaults.speed * (Math.random() * 1.2 + 0.4) * (Math.random() > 0.5 ? 1 : -1);
+            }
+          });
+        }
+      };
+
+      const rectsOverlap = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+
+      const handleCollisions = () => {
+        state.projectiles.forEach((shot) => {
+          state.entities.forEach((enemy) => {
+            if (!enemy.dead && rectsOverlap(shot, enemy)) {
+              enemy.dead = true;
+              shot.dead = true;
+              state.score += manifest.enemy.points;
+            }
+          });
+        });
+
+        state.projectiles = state.projectiles.filter((shot) => !shot.dead);
+        state.entities = state.entities.filter((enemy) => !enemy.dead);
+
+        state.entities.forEach((enemy) => {
+          if (rectsOverlap(hero, enemy)) {
+            state.score = Math.max(0, state.score - manifest.enemy.penalty);
+            enemy.dead = true;
+          }
+        });
+        state.entities = state.entities.filter((enemy) => !enemy.dead);
+      };
+
+      const draw = () => {
+        ctx.fillStyle = manifest.scene.background;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = hero.color;
+        ctx.fillRect(hero.x, hero.y, hero.width, hero.height);
+
+        if (manifest.gravity.enabled) {
+          ctx.fillStyle = manifest.scene.ground;
+          ctx.fillRect(0, canvas.height - manifest.gravity.ground, canvas.width, manifest.gravity.ground);
+        }
+
+        state.projectiles.forEach((shot) => {
+          ctx.fillStyle = shot.color;
+          ctx.fillRect(shot.x, shot.y, shot.width, shot.height);
+        });
+
+        state.entities.forEach((enemy) => {
+          ctx.fillStyle = enemy.color;
+          ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        });
+      };
+
+      const loop = () => {
+        state.tick++;
+        handleInput();
+        updateHero();
+        updateProjectiles();
+        updateEntities();
+        handleCollisions();
+        draw();
+        spawnLoop();
+        document.getElementById('score').textContent = state.score;
+        requestAnimationFrame(loop);
+      };
+
+      loop();
+
+      window.addEventListener('keydown', (event) => {
+        keys[event.key.toLowerCase()] = true;
+      });
+      window.addEventListener('keyup', (event) => {
+        keys[event.key.toLowerCase()] = false;
+      });
+    </script>
+  </template>
+
+  <script type="module">
+    const promptInput = document.getElementById('command');
+    const generateButton = document.getElementById('generate');
+    const statusEl = document.getElementById('status');
+    const preview = document.getElementById('preview');
+    const historyEl = document.getElementById('history');
+    const templateNodes = document.querySelectorAll('.template');
+    const baseTemplate = document.getElementById('base-game-template').innerHTML;
+
+    const MAX_HISTORY = 5;
+    const briefHistory = [];
+
+    const manifestPresets = [
+      {
+        match: /platform|jump|run/i,
+        manifest: () => ({
+          player: { width: 40, height: 60, speed: 3.4, color: '#21d4fd' },
+          controls: { left: 'arrowleft', right: 'arrowright', up: 'w', down: 's', jump: 'space', fire: 'space' },
+          gravity: { enabled: true, force: 0.6, ground: 50, jumpImpulse: 12 },
+          shooting: { enabled: false },
+          projectile: { width: 6, height: 16, speed: 8, color: '#ffd166' },
+          enemy: {
+            defaults: { width: 40, height: 40, color: '#ef476f', speed: 2 },
+            points: 25,
+            penalty: 35,
+            spawnRate: 120,
+            spawnFrom: 'top',
+            movement: 'patrol',
+            patrolRange: 120,
+            bounds: 'bounce'
+          },
+          scene: { background: '#030d27', ground: '#061540' }
+        })
+      },
+      {
+        match: /shoot|spaceship|space|alien|laser/i,
+        manifest: () => ({
+          player: { width: 38, height: 42, speed: 4.2, color: '#21d4fd' },
+          controls: { left: 'arrowleft', right: 'arrowright', up: 'arrowup', down: 'arrowdown', jump: 'space', fire: ' ' },
+          gravity: { enabled: false, force: 0, ground: 0, jumpImpulse: 0 },
+          shooting: { enabled: true, rate: 12 },
+          projectile: { width: 6, height: 16, speed: 9, color: '#aaf683' },
+          enemy: {
+            defaults: { width: 32, height: 32, color: '#ff006e', speed: 1.8 },
+            points: 15,
+            penalty: 20,
+            spawnRate: 30,
+            spawnFrom: 'top',
+            movement: 'drop',
+            bounds: 'despawn'
+          },
+          scene: { background: '#050021', ground: '#0f052c' }
+        })
+      },
+      {
+        match: /breakout|brick|paddle|ball|pong|bounce/i,
+        manifest: () => ({
+          player: { width: 120, height: 18, speed: 5, color: '#21d4fd' },
+          controls: { left: 'arrowleft', right: 'arrowright', up: 'w', down: 's', jump: 'space', fire: 'space' },
+          gravity: { enabled: false, force: 0, ground: 0, jumpImpulse: 0 },
+          shooting: { enabled: false },
+          projectile: { width: 10, height: 10, speed: 6, color: '#ffd166' },
+          enemy: {
+            defaults: { width: 60, height: 20, color: '#ef476f', speed: 0 },
+            points: 10,
+            penalty: 5,
+            spawnRate: 0,
+            spawnFrom: 'top',
+            movement: 'static',
+            bounds: 'stay'
+          },
+          scene: { background: '#030d22', ground: '#030d22', brickRows: 4, brickCols: 8 }
+        })
+      }
+    ];
+
+    const defaultManifest = {
+      player: { width: 36, height: 36, speed: 3.6, color: '#21d4fd' },
+      controls: { left: 'a', right: 'd', up: 'w', down: 's', jump: 'space', fire: 'space' },
+      gravity: { enabled: false, force: 0, ground: 0, jumpImpulse: 0 },
+      shooting: { enabled: false },
+      projectile: { width: 6, height: 16, speed: 8, color: '#ffd166' },
+      enemy: {
+        defaults: { width: 40, height: 40, color: '#ff4d6d', speed: 1.5 },
+        points: 20,
+        penalty: 15,
+        spawnRate: 80,
+        spawnFrom: 'top',
+        movement: 'drop',
+        bounds: 'despawn'
+      },
+      scene: { background: '#04122f', ground: '#061540' }
+    };
+
+    const breakoutManifest = (config) => {
+      const brickRows = config.enemy.brickRows || 5;
+      const brickCols = config.enemy.brickCols || 8;
+      const bricks = [];
+      const brickWidth = 70;
+      const brickHeight = 22;
+      const padding = 10;
+      const offsetTop = 50;
+      const offsetLeft = 45;
+
+      for (let c = 0; c < brickCols; c++) {
+        for (let r = 0; r < brickRows; r++) {
+          bricks.push({
+            x: c * (brickWidth + padding) + offsetLeft,
+            y: r * (brickHeight + padding) + offsetTop,
+            width: brickWidth,
+            height: brickHeight,
+            color: '#f72585',
+            dead: false
+          });
+        }
+      }
+
+      return {
+        ...config,
+        bricks,
+        ball: {
+          x: 400,
+          y: 420,
+          radius: 9,
+          speed: 4.2,
+          dx: 3,
+          dy: -3,
+          color: '#ffd166'
+        }
+      };
+    };
+
+    const parseManifest = (brief) => {
+      for (const preset of manifestPresets) {
+        if (preset.match.test(brief)) {
+          const config = preset.manifest();
+          return preset.match.test('breakout') ? breakoutManifest(config) : config;
+        }
+      }
+      return defaultManifest;
+    };
+
+    const breakoutScript = (config) => `
+      const bricks = ${JSON.stringify((config.bricks ?? []))};
+      const ball = ${JSON.stringify(config.ball)};
+
+      const updateBall = () => {
+        ball.x += ball.dx;
+        ball.y += ball.dy;
+        if (ball.x + ball.dx > canvas.width - ball.radius || ball.x + ball.dx < ball.radius) ball.dx = -ball.dx;
+        if (ball.y + ball.dy < ball.radius) ball.dy = -ball.dy;
+        else if (ball.y + ball.dy > canvas.height - ball.radius - 30) {
+          if (ball.x > hero.x && ball.x < hero.x + hero.width) {
+            ball.dy = -ball.dy;
+          } else if (ball.y + ball.dy > canvas.height - ball.radius) {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height - 80;
+            ball.dx = 3;
+            ball.dy = -3;
+            state.score = Math.max(0, state.score - 50);
+          }
+        }
+      };
+
+      const drawBricks = () => {
+        bricks.forEach((brick) => {
+          if (!brick.dead) {
+            ctx.fillStyle = brick.color;
+            ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+          }
+        });
+      };
+
+      const brickCollisions = () => {
+        bricks.forEach((brick) => {
+          if (!brick.dead && ball.x > brick.x && ball.x < brick.x + brick.width && ball.y > brick.y && ball.y < brick.y + brick.height) {
+            ball.dy = -ball.dy;
+            brick.dead = true;
+            state.score += 10;
+          }
+        });
+      };
+
+      const originalDraw = draw;
+      draw = () => {
+        originalDraw();
+        drawBricks();
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = ball.color;
+        ctx.fill();
+      };
+
+      const originalLoop = loop;
+      loop = () => {
+        state.tick++;
+        handleInput();
+        updateHero();
+        updateProjectiles();
+        updateEntities();
+        handleCollisions();
+        updateBall();
+        brickCollisions();
+        draw();
+        spawnLoop();
+        document.getElementById('score').textContent = state.score;
+        requestAnimationFrame(loop);
+      };
+
+      loop();
+    `;
+
+    const generateGame = (brief) => {
+      const manifest = parseManifest(brief);
+      const html = baseTemplate
+        .replace('{{brief}}', brief.replace(/`/g, '\\`'))
+        .replace('{{manifest}}', JSON.stringify(manifest));
+      const doc = preview.contentWindow.document;
+      doc.open();
+      doc.write(html);
+      doc.close();
+
+      if (/breakout|brick|paddle|ball|pong|bounce/i.test(brief)) {
+        const script = breakoutScript(manifest);
+        const scriptTag = doc.createElement('script');
+        scriptTag.textContent = script;
+        doc.body.appendChild(scriptTag);
+      }
+    };
+
+    const updateHistory = (brief) => {
+      briefHistory.unshift({ brief, time: new Date().toLocaleTimeString() });
+      if (briefHistory.length > MAX_HISTORY) briefHistory.length = MAX_HISTORY;
+
+      historyEl.innerHTML = briefHistory
+        .map(entry => `
+          <div class="history-entry" data-brief="${entry.brief.replace(/"/g, '&quot;')}">
+            <span>${entry.time}</span>
+            <code>${entry.brief}</code>
+          </div>
+        `)
+        .join('');
+    };
+
+    const setStatus = (message, success = false) => {
+      statusEl.innerHTML = success ? `<strong>${message}</strong>` : message;
+    };
+
+    generateButton.addEventListener('click', () => {
+      const brief = promptInput.value.trim();
+      if (!brief) {
+        setStatus('Tell me about your game, then hit generate.');
+        return;
+      }
+
+      setStatus('Synthesizing game logic...');
+      generateButton.disabled = true;
+
+      requestAnimationFrame(() => {
+        generateGame(brief);
+        updateHistory(brief);
+        setStatus('Prototype ready. Hit the arrows! 🚀', true);
+        generateButton.disabled = false;
+      });
+    });
+
+    templateNodes.forEach((node) => {
+      node.addEventListener('click', () => {
+        promptInput.value = node.dataset.command;
+        promptInput.focus();
+      });
+      node.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          node.click();
+        }
+      });
+    });
+
+    historyEl.addEventListener('click', (event) => {
+      const entry = event.target.closest('.history-entry');
+      if (!entry) return;
+      const brief = entry.dataset.brief;
+      promptInput.value = brief;
+      generateGame(brief);
+      setStatus('Reloaded that prototype for you.', true);
+    });
+  </script>
+</body>
+</html>
